@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -12,54 +14,41 @@ class Login extends StatelessWidget {
   final TextEditingController _passwordController = TextEditingController();
 
   void _login(BuildContext context) async {
-    final String apiUrl = '$api/login/';
-    TokenProvider authProvider = Provider.of<TokenProvider>(context, listen: false);
+    const String apiUrl = '${api}login/';
 
-    final String username = _usernameController.text.trim();
-    final String password = _passwordController.text;
-    print(username);
+    TokenProvider authProvider =
+        Provider.of<TokenProvider>(context, listen: false);
 
-    final Map<String, dynamic> loginData = {
-      'username': username,
-      'password': password,
-    };
+    final String username = _usernameController.text.toString();
+    final String password = _passwordController.text.toString();
 
     final response = await http.post(
       Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(loginData),
+      body: {"username": username, "password": password},
     );
-    print(apiUrl);
-    print("adf");
-    print(response.statusCode);
-      print("adf");
-    print(loginData[username]);
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
-      print(response.body);
-      final accessToken = responseData['access_token'];
+      final accessToken = responseData['token'];
       authProvider.updateToken(accessToken);
       final prefs = await SharedPreferences.getInstance();
-    prefs.setString('auth_token', accessToken);
-      print(loginData[username]);
-      final String uname = username;
-  Navigator.pushReplacementNamed(
-    context,
-    '/home',
-    arguments: uname,
-  );
+      prefs.setString('auth_token', accessToken);
+      Navigator.pushReplacementNamed(
+        context,
+        '/home',
+      );
     } else {
       // Login failed
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Error'),
-            content: Text('Login failed. Please check your username and password.'),
+            title: const Text('Error'),
+            content: const Text(
+                'Login failed. Please check your username and password.'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
+                child: const Text('OK'),
               ),
             ],
           );
@@ -71,10 +60,7 @@ class Login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Login'),
-        automaticallyImplyLeading: false
-      ),
+      appBar: AppBar(title: Text('Login'), automaticallyImplyLeading: false),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -100,20 +86,20 @@ class Login extends StatelessWidget {
               child: Text('Login'),
             ),
             SizedBox(height: 16.0), // Add some spacing
-MouseRegion(
-            cursor: SystemMouseCursors.click, // Set the cursor to clickable
-            child: GestureDetector(
-              onTap: () {
-                Navigator.popAndPushNamed(context, '/signup');
-              },
-              child: Text(
-                'Create New User',
-                style: TextStyle(
-                  color: Colors.deepPurple,
-                              ),
+            MouseRegion(
+              cursor: SystemMouseCursors.click, // Set the cursor to clickable
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.popAndPushNamed(context, '/signup');
+                },
+                child: Text(
+                  'Create New User',
+                  style: TextStyle(
+                    color: Colors.deepPurple,
+                  ),
+                ),
               ),
             ),
-          ),
           ],
         ),
       ),
